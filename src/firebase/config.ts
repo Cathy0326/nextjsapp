@@ -3,7 +3,7 @@ import { initializeApp, getApps } from "firebase/app";
 import {getAuth} from "firebase/auth"; 
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCX-_E0vud214A7iHELydGAFQiR3JUe2dc",
+  apiKey: "AIzaSyBcnGDlVznG4bGU3mpN327AbMqMozA9HAE",
   authDomain: "nextjsapp-f9fd8.firebaseapp.com",
   projectId: "nextjsapp-f9fd8",
   storageBucket: "nextjsapp-f9fd8.appspot.com",

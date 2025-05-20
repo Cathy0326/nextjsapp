@@ -1,25 +1,90 @@
-// src/components/AuthCheck.tsx
+// src/context/AuthContext.tsx
 "use client";
 
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  signOut,
+  onAuthStateChanged,
+  updateProfile,
+  User 
+} from 'firebase/auth';
+import { auth } from '../firebase/config';
 
-export default function AuthCheck({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
-  const router = useRouter();
+interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  register: (email: string, password: string, fullName: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<{ email: string; password: string; username: string } | null>;
+  logout: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextType>({ 
+  user: null, 
+  loading: true,
+  register: async () => {},
+  login: async () => null,
+  logout: async () => {}
+});
+
+export const useAuth = () => useContext(AuthContext);
+
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const register = async (email: string, password: string, fullName: string) => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      if (userCredential.user) {
+        await updateProfile(userCredential.user, {
+          displayName: fullName
+        });
+        setUser({ ...userCredential.user });
+      }
+    } catch (error) {
+      console.error("Error registering user:", error);
+      throw error;
     }
-  }, [user, loading, router]);
+  };
 
-  // Show loading state
-  if (loading) {
-    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
-  }
+  const login = async (email: string, password: string) => {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const username = userCredential.user.displayName || "";
+      return {
+        email: userCredential.user.email || "",
+        password,
+        username
+      };
+    } catch (error) {
+      console.error("Error logging in:", error);
+      throw error;
+    }
+  };
 
-  // Only render children if user is authenticated
-  return user ? <>{children}</> : null;
-}
+  const logout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Error logging out:", error);
+      throw error;
+    }
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, loading, register, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
