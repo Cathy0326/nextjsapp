@@ -104,10 +104,10 @@ export default function LoginPage() {
     <div className="container mx-auto px-4">
       <div className="flex justify-between items-center py-4">
         <Link href="/" className="text-blue-500 hover:text-blue-700">
-          Home
+          {/* Home */}
         </Link>
       </div>
-      <h1 className="text-3xl font-bold text-center mt-10 mb-6">Welcome to NextJs Auth App</h1>
+      <h1 className="text-3xl font-bold text-center mt-10 mb-6">Welcome to NextJsApp</h1>
       
       <div className="max-w-md w-full mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg">
         <h2 className="text-2xl font-bold text-center mb-6">
